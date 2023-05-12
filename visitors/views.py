@@ -10,9 +10,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
+@login_required
 def base(request):
     template = loader.get_template('index.html')
     return HttpResponse(template.render())
@@ -32,7 +33,7 @@ def dashboard(request):
     return HttpResponse(template.render())
 
 
-
+@login_required
 def visitor(request):
     visitors = Visitor.objects.all().values()
     template = loader.get_template('visitor.html')
@@ -41,7 +42,7 @@ def visitor(request):
     }
     return HttpResponse(template.render(context, request))
 
-
+@login_required
 def checkout(request, pk):
     visitor = Visitor.objects.get(id=pk)
     current_time = datetime.now(timezone.utc)
@@ -50,7 +51,7 @@ def checkout(request, pk):
     return redirect('visitor')
 
 
-
+@login_required
 def import_data_to_db(request):
     if request.method == 'POST':
         file = request.FILES['files']
@@ -76,10 +77,12 @@ def import_data_to_db(request):
     return render(request, 'import.html')
 
 
+@login_required
 def qr(request):
     temp = loader.get_template('qr.html')
     return HttpResponse(temp.render())
 
+@login_required
 def details(request,id):
     visitor = Visitor.objects.get(id=id)
     temp = loader.get_template('details.html')
@@ -89,8 +92,10 @@ def details(request,id):
 
     return HttpResponse(temp.render(context,request))
 
+@login_required
 def update(request, id):
     visitor = Visitor.objects.get(id=id)
+    next= request.GET.get('next')
 
     context={
         'visitor':visitor
@@ -116,17 +121,23 @@ def update(request, id):
         visitor.host = host
         visitor.save()
 
-        return redirect('/visitor')
+
+        if next:
+            return redirect(f'{next}')
+        else:
+            return redirect('/visitor')
     
     return render(request, 'update.html', context)
 
 
 
+@login_required
 def delete(request,id):
     visitor = Visitor.objects.get(id=id)
     visitor.delete()
 
     return redirect('/visitor')
+
 
 def login_user(request):
     if request.user.is_authenticated:
@@ -136,10 +147,16 @@ def login_user(request):
             print(request.POST)
             username = request.POST.get('username')
             password = request.POST.get('password')
+            next = request.GET.get('next')
+            
+            
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return HttpResponseRedirect('/')
+                if next:
+                    return redirect(f'{next}')
+                else:
+                    return HttpResponseRedirect('/')
             else:
                 messages.info(request, 'Username or password is incorrect.')
         return render(request, 'user/login.html')
