@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 # Create your models here.
 
@@ -16,3 +17,17 @@ class Visitor(models.Model):
 
 class ExcelFile(models.Model):
     file=models.FileField(upload_to='excel')
+
+
+class Purpose(models.Model):
+    title = models.CharField(max_length=50)
+    description = models.TextField()
+    slug = models.SlugField(unique=True,blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super(Purpose,self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title

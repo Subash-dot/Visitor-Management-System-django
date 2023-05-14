@@ -13,7 +13,5 @@ urlpatterns = [
     path('visitor/details/<int:id>',views.details, name="details"),
     path('visitor/delete/<int:id>',views.delete,name='delete'),
     path('visitor/update/<int:id>',views.update,name='update'),
-    path('login/',views.login_user, name='login'),
-    path('register/',views.register_user,name='register'),
-    path('logout/',views.logout_user,name='logout'),
+
 ]

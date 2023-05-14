@@ -37,27 +37,40 @@
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Create an Account!</h1>
                             </div>
+
+                            {% for message in messages %}
+                            <div class="mt-4 alert alert-{% if message.tags == 'error' %}danger{% else %}{{message.tags}}{% endif %}
+                                alert-dismissible" role="alert">
+                                <div id="form_errors">
+                                    <strong>{{message}}</strong>
+                                </div>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {%endfor%}
+                            
                             <form class="user" method='POST' action="{% url 'register' %}">
                                 {% csrf_token %}
                                 <div class="form-group">
                                         <input type="text" class="form-control form-control-user" id="exampleFirstName"
-                                            placeholder="User Name">
+                                            placeholder="User Name" name="username">
                                 </div>
                                 <div class="form-group">
                                     <input type="email" class="form-control form-control-user" id="exampleInputEmail"
-                                        placeholder="Email Address">
+                                        placeholder="Email Address" name="email">
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
                                         <input type="password" class="form-control form-control-user"
-                                            id="exampleInputPassword" placeholder="Password">
+                                            id="exampleInputPassword" placeholder="Password" name="password">
                                     </div>
                                     <div class="col-sm-6">
                                         <input type="password" class="form-control form-control-user"
-                                            id="exampleRepeatPassword" placeholder="Repeat Password">
+                                            id="exampleRepeatPassword" placeholder="Repeat Password" name="password2">
                                     </div>
                                 </div>
-                                <button href="/login" class="btn btn-primary btn-user btn-block">
+                                <button  type="submit" class="btn btn-primary btn-user btn-block">
                                     Register Account
                                 </button>
                                 
@@ -69,7 +82,7 @@
                                 <a class="small" href="/forgot_pass">Forgot Password?</a>
                             </div>
                             <div class="text-center">
-                                <a class="small" href="/login">Already have an account? Login!</a>
+                                <a class="small" href="{% url 'login'%}">Already have an account? Login!</a>
                             </div>
                         </div>
                     </div>
