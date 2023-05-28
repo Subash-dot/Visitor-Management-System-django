@@ -1,16 +1,14 @@
 from django.utils import timezone
 from datetime import *
-from django.shortcuts import render, redirect, HttpResponseRedirect
+from django.shortcuts import render, redirect
 from django.template import loader
 from django.http import HttpResponse
-from .models import Visitor, ExcelFile
-from .forms import VisitorForm
+from .models import Visitor, ExcelFile, Purpose
+from .forms import VisitorForm, PurposeForm
 import pandas as pd
 from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from io import BytesIO
 
 # Create your views here.
 @login_required
@@ -18,16 +16,29 @@ def base(request):
     template = loader.get_template('index.html')
     return HttpResponse(template.render())
 
+
 def visitor_create_view(request):
+    purpose = Purpose.objects.all()
+    context = {
+        'purpose': purpose,
+    }
+
     if request.method == 'POST':
         form = VisitorForm(request.POST)
+        context['form'] = form
+
         if form.is_valid():
             form.save()
             return redirect('visitor')
     else:
         form = VisitorForm()
-    return render(request, 'visitoradd.html', {'form': form})
+        context['form'] = form
 
+
+    return render(request, 'visitoradd.html', context)
+
+
+@login_required
 def dashboard(request):
     template = loader.get_template('dashboard.html')
     return HttpResponse(template.render())
@@ -35,7 +46,7 @@ def dashboard(request):
 
 @login_required
 def visitor(request):
-    visitors = Visitor.objects.all().values()
+    visitors = Visitor.objects.all()
     template = loader.get_template('visitor.html')
     context = {
         'visitors' : visitors,
@@ -69,12 +80,48 @@ def import_data_to_db(request):
                 phone=data[3],
                 address=data[4],
                 company=data[5],
-                purpose=data[6],
+                purpose=Purpose.objects.get(name=data[6]),
                 check_in=data[7],
                 check_out=data[8],
                 host=data[9]
             )     
     return render(request, 'import.html')
+
+
+@login_required
+def export_data_to_excel(request):
+    # Retrieve data from the database
+    visitors = Visitor.objects.all()
+    # Create a pandas DataFrame with the data
+
+    data = {
+        'First Name': [visitor.first_name for visitor in visitors],
+        'Last Name': [visitor.last_name for visitor in visitors],
+        'Email': [visitor.email for visitor in visitors],
+        'Phone': [visitor.phone for visitor in visitors],
+        'Address': [visitor.address for visitor in visitors],
+        'Company': [visitor.company for visitor in visitors],
+        'Purpose': [visitor.purpose for visitor in visitors],
+        'Check-In': [visitor.check_in.replace(tzinfo=None) for visitor in visitors],
+        'Check-Out': [visitor.check_out.replace(tzinfo=None) for visitor in visitors],
+        'Host': [visitor.host for visitor in visitors],
+    }
+    df = pd.DataFrame(data)
+    # Create an Excel file in memory
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, sheet_name='Visitors', index=False)
+    writer.close()
+    output.seek(0)
+    # Set response headers
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=visitors.xlsx'
+    # Write the Excel file to the response
+    response.write(output.getvalue())
+
+    return response
+    
+
 
 
 @login_required
@@ -95,7 +142,6 @@ def details(request,id):
 @login_required
 def update(request, id):
     visitor = Visitor.objects.get(id=id)
-    next= request.GET.get('next')
 
     context={
         'visitor':visitor
@@ -121,11 +167,7 @@ def update(request, id):
         visitor.host = host
         visitor.save()
 
-
-        if next:
-            return redirect(f'{next}')
-        else:
-            return redirect('/visitor')
+        return redirect('/visitor')
     
     return render(request, 'update.html', context)
 
@@ -135,9 +177,52 @@ def update(request, id):
 def delete(request,id):
     visitor = Visitor.objects.get(id=id)
     visitor.delete()
-
     return redirect('/visitor')
 
 
-# class PurposeView(DetailView):
-#     model = Person
+
+
+def purpose(request):
+    form = PurposeForm()
+    purpose = Purpose.objects.all()
+    context = {
+        'purpose': purpose,
+        'form':form
+    }
+
+    if request.method == "POST":
+        form = PurposeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return render(request, 'purpose/purpose.html', context)
+
+    return render(request, 'purpose/purpose.html', context)
+
+def edit_purpose(request, id):
+    purpose = Purpose.objects.get(id=id)
+
+    context = {
+        'purpose' : purpose
+    }
+
+    if request.method == "POST":
+        name= request.POST.get("name")
+        description = request.POST.get('description')
+
+        purpose.name = name
+        purpose.description = description
+
+        purpose.save()
+        return redirect('/purpose')
+
+    return render(request, 'purpose/edit_purpose.html', context)
+
+
+def delete_purpose(request,id):
+    purpose = Purpose.objects.get(id=id)
+    purpose.delete()
+    return redirect('/purpose')
+
+
+
+

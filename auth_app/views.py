@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-# Create your views here.
 
 @ensure_csrf_cookie
 def login_user(request):
@@ -16,7 +15,6 @@ def login_user(request):
             username = request.POST.get('username')
             password = request.POST.get('password')
             next = request.GET.get('next')
-            
             
             user = authenticate(request, username=username, password=password)
             if user is not None and user.check_password(password):

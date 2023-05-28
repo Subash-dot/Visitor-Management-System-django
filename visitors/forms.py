@@ -1,5 +1,5 @@
 from django import forms
-from .models import Visitor
+from .models import Visitor, Purpose
 
 class VisitorForm(forms.ModelForm):
     class Meta:
@@ -9,4 +9,7 @@ class VisitorForm(forms.ModelForm):
             'check_in': forms.DateInput(attrs={'type': 'date'})
         }
 
-        
+class PurposeForm(forms.ModelForm):
+    class Meta:
+        model = Purpose
+        fields = ['name', 'description']
