@@ -45,11 +45,19 @@
             </div>
         </div>
 
-        <div class="row mb-3">
-            <div class="col">
-                <label for="purpose" class="form-label">Purpose</label>
-                <input type="text" class="form-control" name="purpose" value="{{ visitor.purpose }}">
-            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                <label for="id_purpose"class="form-label">Purpose:</label>
+                  <select id="id_purpose" class="form-control" name="purpose" type="text">
+                    <option slected>{{visitor.purpose}} </option>
+                    {%for p in purpose%}
+                    <option>{{p.name}}</option>
+                    {%endfor%}
+                  </select>
+                </div>
+              
+                
             <div class="col">
                 <label for="host" class="form-label">Host</label>
                 <input type="text" class="form-control" name="host" value="{{ visitor.host }}">

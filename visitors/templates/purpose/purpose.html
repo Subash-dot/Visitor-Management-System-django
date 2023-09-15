@@ -1,13 +1,9 @@
 {%extends 'index.html'%}
 
-{%block head%}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.17/dist/sweetalert2.min.css">  <!---Swal---->
-{%endblock%}
-
-
 {%block content%}
 <div class="container">
-
+  
+{%include 'messages.html'%}
 
 <div class='text-center'>
   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addPurposeModal">
@@ -65,7 +61,8 @@
                           <th>S.N.</th>
                           <th>Name</th>
                           <th>Description</th>
-                          <td>Actions</td>
+                          <th>Actions</th>
+                          <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,16 +78,17 @@
                           <a href="update/{{p.id}}" class="update">
                             <i class="fas fa-edit" title="Update"></i>
                           </a>
+                        </td>
+                        <td>
                           {%if not p.status%}
-                            <a href="update/{{p.id}}" class="Hide">
-                              <i class="fas fa-eye-slash" title="Hide"></i>
-                            </a>
-                          {%else%}
-                          <a href="update/{{p.id}}" class="Unhide">
-                            <i class="fas fa-eye" title="Unhide"></i>
+                          <a href="change-status/{{p.id}}" class="Hide">
+                            <i class="fas fa-eye-slash" title="Status: Hidden"></i>
                           </a>
-                          {%endif%}
-
+                        {%else%}
+                        <a href="change-status/{{p.id}}" class="Unhide">
+                          <i class="fas fa-eye" title="Status: Shown"></i>
+                        </a>
+                        {%endif%}
                         </td>
 
                       </tr>

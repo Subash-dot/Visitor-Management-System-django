@@ -20,5 +20,6 @@ urlpatterns = [
     path('purpose/',views.purpose,name='purpose'),
     path('purpose/delete/<int:id>',views.delete_purpose,name='delete_purpose'),
     path('purpose/update/<int:id>',views.edit_purpose,name='edit_purpose'),
+    path('purpose/change-status/<int:id>',views.change_status, name="change-status"),
 
 ]

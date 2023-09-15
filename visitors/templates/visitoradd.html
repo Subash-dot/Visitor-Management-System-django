@@ -1,7 +1,7 @@
 {% extends 'index.html' %}
 
 {% block content %}
-  
+  {%include 'messages.html'%}
   <div class="container-fluid">
 
     <div class="card shadow mb-4">
@@ -67,7 +67,6 @@
 
         </select>
       </div>
-      
     </div>
 
     <input type="hidden" id="check_in_time" name="check_in" value="">

@@ -9,6 +9,7 @@ import pandas as pd
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from io import BytesIO
+from django.contrib import messages
 
 # Create your views here.
 @login_required
@@ -29,12 +30,12 @@ def visitor_create_view(request):
 
         if form.is_valid():
             form.save()
+            messages.success(request,'Visitor Created Successfully.')
             return redirect('visitor')
     else:
         form = VisitorForm()
         context['form'] = form
-
-
+    
     return render(request, 'visitoradd.html', context)
 
 
@@ -84,7 +85,8 @@ def import_data_to_db(request):
                 check_in=data[7],
                 check_out=data[8],
                 host=data[9]
-            )     
+            )
+        messages.success(request, 'visitor data updated.')     
     return render(request, 'import.html')
 
 
@@ -142,9 +144,11 @@ def details(request,id):
 @login_required
 def update(request, id):
     visitor = Visitor.objects.get(id=id)
+    purpose = Purpose.objects.all()
 
     context={
-        'visitor':visitor
+        'visitor':visitor,
+        'purpose':purpose
     }
     
     if request.method =='POST':
@@ -163,10 +167,11 @@ def update(request, id):
         visitor.phone = phone
         visitor.address = address
         visitor.company = company
-        visitor.purpose = purpose
+        visitor.purpose = Purpose.objects.get(name=purpose)
         visitor.host = host
         visitor.save()
 
+        messages.success(request, 'Visitor updated successfully!')
         return redirect('/visitor')
     
     return render(request, 'update.html', context)
@@ -177,6 +182,8 @@ def update(request, id):
 def delete(request,id):
     visitor = Visitor.objects.get(id=id)
     visitor.delete()
+
+    messages.error(request, 'Visitor deleted.')
     return redirect('/visitor')
 
 
@@ -194,6 +201,7 @@ def purpose(request):
         form = PurposeForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'New Purpose Created Successfully!.')
             return render(request, 'purpose/purpose.html', context)
 
     return render(request, 'purpose/purpose.html', context)
@@ -213,6 +221,7 @@ def edit_purpose(request, id):
         purpose.description = description
 
         purpose.save()
+        messages.info(request, 'Purpose Updated.')
         return redirect('/purpose')
 
     return render(request, 'purpose/edit_purpose.html', context)
@@ -221,6 +230,18 @@ def edit_purpose(request, id):
 def delete_purpose(request,id):
     purpose = Purpose.objects.get(id=id)
     purpose.delete()
+    messages.error(request, 'Purpose deleted.')
+    return redirect('/purpose')
+
+def change_status(request, id):
+    purpose = Purpose.objects.get(id=id)
+    if purpose.status:
+        purpose.status = False
+        messages.warning(request, "Status is now Hidden.")
+    else:
+        purpose.status = True
+        messages.success(request, "Status is now Shown.")
+    purpose.save()
     return redirect('/purpose')
 
 
